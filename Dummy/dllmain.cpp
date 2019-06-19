@@ -21,9 +21,8 @@ extern "C++"
 
 struct dummy : public IDummy
 { 
-    dummy() 
+    dummy() : _ref_count(1)
     {
-        ModifyRefCount(1);
     }
 
     HRESULT STDMETHODCALLTYPE QueryInterface(
@@ -35,28 +34,19 @@ struct dummy : public IDummy
 
     ULONG STDMETHODCALLTYPE AddRef() override
     {
-        return ModifyRefCount(+1);
+        return ++_ref_count;
     }
 
     ULONG STDMETHODCALLTYPE Release() override
     {
-        return ModifyRefCount(-1);
+        return --_ref_count;
     }
 
     void STDMETHODCALLTYPE Void() override
     {
     }
 
-    int ModifyRefCount(int by)
-    {
-        // Native BPs behind ilasm'd calli instructions do not hit in mixed mode debugging
- //       __debugbreak();
-        _ref_count += by;
-        return _ref_count;
-    }
-
     int _ref_count{ 0 };
-
 };
 
 extern "C"
